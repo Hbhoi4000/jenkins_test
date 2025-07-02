@@ -1,19 +1,25 @@
 pipeline {
     agent any
+
     stages {
-        stage('Clone Repo') {
+        stage('Clone') {
             steps {
-                git 'https://github.com/your-username/my-fastapi-app.git'
+                git 'https://github.com/yourusername/fastapi-docker.git'
             }
         }
-        stage('Install & Run') {
+
+        stage('Build Docker') {
+            steps {
+                sh 'sudo docker build -t fastapi-app .'
+            }
+        }
+
+        stage('Deploy Docker') {
             steps {
                 sh '''
-                pkill -f uvicorn || true
-                python3 -m venv venv
-                source venv/bin/activate
-                pip install -r requirements.txt
-                nohup uvicorn main:app --host 0.0.0.0 --port 8000 > fastapi.log 2>&1 &
+                sudo docker stop fastapi-app || true
+                sudo docker rm fastapi-app || true
+                sudo docker run -d --name fastapi-app -p 8000:8000 fastapi-app
                 '''
             }
         }
